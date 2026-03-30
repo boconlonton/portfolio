@@ -17,11 +17,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-      CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
-
     steps:
       - uses: actions/checkout@v4
 
@@ -40,17 +35,18 @@ jobs:
       - name: Configure AWS Credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1
+          role-session-name: minimal-portfolio-${{ github.run_id }}
 
       - name: Sync out/ to S3
         run: |
           aws sts get-caller-identity
-          aws s3 sync out/ "s3://${{ env.AWS_S3_BUCKET }}/" --delete --no-progress
+          aws s3 sync out/ "s3://${{ secrets.AWS_S3_BUCKET }}/" --delete --no-progress
 
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id "${{ env.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
             --paths "/*" \
             --region us-east-1
