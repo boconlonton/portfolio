@@ -1,26 +1,25 @@
-name: Deploy to S3 and Invalidate CloudFront
+name: Deploy
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
   workflow_dispatch:
-
-permissions:
-  id-token: write
-  contents: read
 
 concurrency:
   group: deploy-s3-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -31,37 +30,37 @@ jobs:
           node-version: "22"
           cache: pnpm
 
-      - name: Install and build
-        run: |
-          pnpm install --frozen-lockfile
-          pnpm build
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      # Empty AWS_ROLE_ARN makes configure-aws-credentials fail with "Could not load credentials from any providers".
-      - name: Check AWS_ROLE_ARN secret
+      - name: Build
+        run: pnpm build
+
+      - name: Verify AWS_ROLE_ARN
         env:
-          _ROLE: ${{ secrets.AWS_ROLE_ARN }}
+          ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
         run: |
-          if [ -z "$_ROLE" ]; then
-            echo "::error::Secret AWS_ROLE_ARN is missing or empty (repo or environment Actions secrets)."
+          if [ -z "$ROLE_ARN" ]; then
+            echo "::error::Secret AWS_ROLE_ARN is missing or empty on environment production."
             exit 1
           fi
 
-      - name: Configure AWS Credentials via OIDC
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
-          role-session-name: minimal-portfolio-${{ github.run_id }}
+          role-session-name: gha-deploy-${{ github.run_id }}
 
-      - name: Sync out/ to S3
-        run: |
-          aws sts get-caller-identity
-          aws s3 sync out/ "s3://${{ secrets.AWS_S3_BUCKET }}/" --delete --no-progress
+      - name: Upload to S3
+        run: >-
+          aws s3 sync out/ "s3://${{ secrets.AWS_S3_BUCKET }}/"
+          --delete --no-progress
 
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
-            --paths "/*" \
-            --region us-east-1
+      - name: Invalidate CloudFront
+        run: >-
+          aws cloudfront create-invalidation
+          --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}"
+          --paths "/*"
+          --region ${{ env.AWS_REGION }}
