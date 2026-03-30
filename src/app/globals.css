@@ -32,6 +32,18 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
+
+    /*
+     * Design system — semantic tokens (reference from Tailwind: bg-ds-control-track, …)
+     * See tailwind.config.ts → theme.extend.colors for the mapping.
+     */
+    --ds-control-track: color-mix(in srgb, var(--fg) 5%, transparent);
+    --ds-control-track-hover: color-mix(in srgb, var(--fg) 8%, transparent);
+    --ds-control-track-border: color-mix(in srgb, var(--fg) 12%, transparent);
+    --ds-control-thumb: hsl(var(--card));
+    --ds-control-thumb-border: color-mix(in srgb, var(--fg) 10%, transparent);
+    --ds-accent: hsl(var(--primary));
+    --ds-accent-muted: color-mix(in srgb, hsl(var(--primary)) 45%, var(--fg));
   }
 
   .dark {
@@ -61,6 +73,14 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+
+    --ds-control-track: color-mix(in srgb, var(--fg) 7%, transparent);
+    --ds-control-track-hover: color-mix(in srgb, var(--fg) 11%, transparent);
+    --ds-control-track-border: color-mix(in srgb, var(--fg) 14%, transparent);
+    --ds-control-thumb: hsl(var(--card));
+    --ds-control-thumb-border: color-mix(in srgb, var(--fg) 12%, transparent);
+    --ds-accent: hsl(var(--primary));
+    --ds-accent-muted: color-mix(in srgb, hsl(var(--primary)) 40%, var(--bg));
   }
 
   * {

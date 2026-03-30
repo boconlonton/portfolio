@@ -4,7 +4,12 @@ import { Archivo, Space_Grotesk } from "next/font/google";
 import { JsonLdWebsite } from "@/components/json-ld";
 import { Nav } from "@/components/nav";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import {
+  SITE_DESCRIPTION,
+  SITE_FAVICON_HREF,
+  SITE_NAME,
+  SITE_URL,
+} from "@/lib/site";
 
 import "./globals.css";
 
@@ -47,7 +52,7 @@ export const metadata: Metadata = {
       follow: true,
     },
   },
-  icons: { icon: "/favicon.svg" },
+  icons: { icon: SITE_FAVICON_HREF },
   openGraph: {
     type: "website",
     locale: "en_US",

@@ -4,15 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-The site is a **Next.js 15 App Router** portfolio. The old static `dist/index.html` flow is retired; treat this repo as App Router–first.
+The site is a **Next.js 15 App Router** portfolio configured for **`output: "export"`**: `pnpm build` writes static assets to **`out/`** for S3 static website hosting (or any static CDN). The old static `dist/index.html` flow is retired.
 
 ## Commands
 
 ```bash
-pnpm dev      # Start dev server at http://localhost:3000
-pnpm build    # Production build
-pnpm start    # Run the production build locally
-pnpm lint     # ESLint
+pnpm dev            # Start dev server at http://localhost:3000
+pnpm build          # Static export → `out/` (S3 / any static host). Not compatible with `next start`.
+pnpm preview:static # Serve `out/` locally (after build)
+pnpm start          # Next.js server mode only — not used when `output: "export"` is set
+pnpm lint           # ESLint
 ```
 
 ## Architecture
@@ -27,15 +28,17 @@ pnpm lint     # ESLint
 
 **Site constants**: `src/lib/site.ts` — `SITE_URL`, `SITE_NAME`, `SITE_DESCRIPTION` (used for metadata, JSON-LD, sitemap, robots).
 
+**Design system**: Semantic tokens live in `src/app/globals.css` as `--ds-*` (e.g. control surfaces, accent). Tailwind maps them in `tailwind.config.ts` (`canvas`, `text-muted`, `ds-control-track`, `ds-accent`, …). Human index: `src/lib/design-system.ts`.
+
 **SEO / metadata** (App Router conventions):
 
 - Root `metadata` + `viewport` in `layout.tsx` (`metadataBase` = `SITE_URL`)
 - Per-route `metadata` on home and stub pages
-- `manifest.ts`, `sitemap.ts` (home + `/about`, `/words`, `/kindness`), `robots.ts` (disallow `/api/`)
-- `opengraph-image.tsx` — default OG image via `next/og` `ImageResponse`
+- `manifest.ts`, `sitemap.ts` (home + `/about/`, `/words/`, `/kindness/` — trailing slashes match `trailingSlash: true`), `robots.ts`
+- `opengraph-image.tsx` — default OG image via `next/og` `ImageResponse` (`export const dynamic = "force-static"` for static export)
 - `JsonLdWebsite` in `json-ld.tsx` — WebSite + Person structured data
 
-**AI chat**: `src/components/chat-widget.tsx` (client) uses `useChat` from `ai/react` with `api: "/api/chat"`. `src/app/api/chat/route.ts` uses `streamText` with `openai("gpt-4o-mini")` and `result.toDataStreamResponse()`.
+**AI chat**: `src/components/chat-widget.tsx` (client) uses `useChat` against **`${NEXT_PUBLIC_BACKEND_URL}/api/agent/chat`** when `NEXT_PUBLIC_BACKEND_URL` is set (CORS as needed). If unset, Send is disabled with a “Coming soon” `title` tooltip and Enter does not submit. There is **no** App Router API in this repo — implement the handler on the backend (Vercel AI SDK–compatible streaming `POST`); see `.env.example`.
 
 **Styling — two-layer system**:
 

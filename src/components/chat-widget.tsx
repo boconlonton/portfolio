@@ -2,7 +2,7 @@
 
 import { useChat } from "ai/react";
 import { MessageCircle } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,12 +16,49 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+/** Path on the backend (same-origin unless `NEXT_PUBLIC_BACKEND_URL` is set). */
+const AGENT_CHAT_PATH = "/api/agent/chat";
+
+function getAgentChatApiUrl(): string {
+  const base = process.env.NEXT_PUBLIC_BACKEND_URL?.trim();
+  if (!base) return AGENT_CHAT_PATH;
+  return `${base.replace(/\/$/, "")}${AGENT_CHAT_PATH}`;
+}
+
+function isBackendConfigured(): boolean {
+  return Boolean(process.env.NEXT_PUBLIC_BACKEND_URL?.trim());
+}
+
 export function ChatWidget() {
+  const backendConfigured = isBackendConfigured();
+  return (
+    <ChatWidgetInner
+      api={getAgentChatApiUrl()}
+      backendConfigured={backendConfigured}
+    />
+  );
+}
+
+function ChatWidgetInner({
+  api,
+  backendConfigured,
+}: {
+  api: string;
+  backendConfigured: boolean;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
-    useChat({
-      api: "/api/chat",
-    });
+    useChat({ api });
+
+  const sendDisabled = isLoading || !backendConfigured;
+
+  function onFormSubmit(e: FormEvent<HTMLFormElement>) {
+    if (!backendConfigured) {
+      e.preventDefault();
+      return;
+    }
+    handleSubmit(e);
+  }
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -100,7 +137,7 @@ export function ChatWidget() {
           </div>
         </ScrollArea>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={onFormSubmit}
           className="mt-4 flex gap-2 border-t border-border pt-4"
           aria-busy={isLoading}
         >
@@ -116,15 +153,33 @@ export function ChatWidget() {
             autoComplete="off"
             name="message"
             type="text"
-            enterKeyHint="send"
+            enterKeyHint={backendConfigured ? "send" : "enter"}
             minLength={1}
             disabled={isLoading}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !backendConfigured) {
+                e.preventDefault();
+              }
+            }}
           />
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Sending…" : "Send"}
-          </Button>
+          {!backendConfigured ? (
+            <span title="Coming soon" className="inline-flex shrink-0">
+              <Button
+                type="submit"
+                disabled={sendDisabled}
+                aria-label="Send — coming soon"
+              >
+                {isLoading ? "Sending…" : "Send"}
+              </Button>
+            </span>
+          ) : (
+            <Button type="submit" disabled={sendDisabled}>
+              {isLoading ? "Sending…" : "Send"}
+            </Button>
+          )}
         </form>
       </SheetContent>
     </Sheet>
   );
 }
+

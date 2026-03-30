@@ -1,6 +1,12 @@
 import type { MetadataRoute } from "next";
 
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import {
+  SITE_DESCRIPTION,
+  SITE_FAVICON_HREF,
+  SITE_NAME,
+} from "@/lib/site";
+
+export const dynamic = "force-static";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -14,7 +20,7 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "en",
     icons: [
       {
-        src: "/favicon.svg",
+        src: SITE_FAVICON_HREF,
         type: "image/svg+xml",
         sizes: "any",
         purpose: "any",
