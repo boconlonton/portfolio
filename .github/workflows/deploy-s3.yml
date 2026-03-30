@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -16,6 +17,9 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -31,11 +35,22 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm build
 
+      # Empty AWS_ROLE_ARN makes configure-aws-credentials fail with "Could not load credentials from any providers".
+      - name: Check AWS_ROLE_ARN secret
+        env:
+          _ROLE: ${{ secrets.AWS_ROLE_ARN }}
+        run: |
+          if [ -z "$_ROLE" ]; then
+            echo "::error::Secret AWS_ROLE_ARN is missing or empty (repo or environment Actions secrets)."
+            exit 1
+          fi
+
       - name: Configure AWS Credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1
+          audience: sts.amazonaws.com
           role-session-name: minimal-portfolio-${{ github.run_id }}
 
       - name: Sync out/ to S3
