@@ -21,11 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: pnpm
@@ -46,7 +46,7 @@ jobs:
           fi
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
