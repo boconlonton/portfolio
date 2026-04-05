@@ -1,10 +1,10 @@
 export function SiteFooter() {
   return (
     <footer
-      className="animate-fade-up-footer mt-auto flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-fg/[0.06] py-[clamp(1.5rem,3.5vw,2rem)] dark:border-fg/[0.08]"
+      className="animate-fade-up-footer mt-auto flex flex-col gap-4 border-t border-fg/[0.06] py-[clamp(1.5rem,3.5vw,2rem)] dark:border-fg/[0.08] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6 sm:gap-y-3"
       aria-label="Site footer"
     >
-      <div className="flex items-center gap-6">
+      <div className="flex flex-wrap items-center gap-6">
         <a
           href="https://github.com/"
           className="link-real footer-link relative inline-flex items-center justify-center text-subtle no-underline opacity-80 transition-[color,opacity] duration-200 hover:opacity-100 hover:text-fg hover:no-underline focus-visible:rounded focus-visible:text-fg focus-visible:opacity-100 focus-visible:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-fg/30"

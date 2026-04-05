@@ -74,7 +74,7 @@ function ChatWidgetInner({
         <Button
           type="button"
           size="icon"
-          className="fixed bottom-6 right-6 z-40 size-12 rounded-full shadow-lg"
+          className="fixed bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-40 size-12 rounded-full shadow-lg sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))]"
           aria-label="Open chat assistant"
         >
           <MessageCircle className="size-6" aria-hidden />

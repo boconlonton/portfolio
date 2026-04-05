@@ -24,6 +24,8 @@ pnpm lint           # ESLint
 
 - **`/`** — `page.tsx`: Hero, Intro, `SiteFooter`, `ChatWidget`
 - **`/about`**, **`/words`**, **`/kindness`** — real routes with minimal “coming soon” copy and metadata; nav labels: About me, Thoughts, Kindness
+- **`/auth/`**, **`/auth/callback/`** — Cognito sign-in page and OAuth redirect handler (client)
+- **`/settings/`**, **`/quotes/add/`** — signed-in-only stubs (`RequireSignedIn`); `robots: noindex`
 - **`not-found.tsx`** — custom 404
 
 **Site constants**: `src/lib/site.ts` — `SITE_URL`, `SITE_NAME`, `SITE_DESCRIPTION` (used for metadata, JSON-LD, sitemap, robots).
@@ -50,6 +52,17 @@ pnpm lint           # ESLint
 **Dark mode**: `ThemeProvider` in `layout.tsx` uses `attribute="class"`, **`defaultTheme="dark"`**, **`enableSystem={false}`**, `disableTransitionOnChange`. The `.dark` class on `<html>` drives variable overrides.
 
 **Nav**: `Nav` wraps `NavLinks` (client) for pathname-aware `aria-current` and `ThemeToggle`.
+
+**User / auth module** (client-only; works with **`output: "export"`** — no App Router API routes for auth):
+
+- **Identity**: **AWS Cognito** — email/password via **SRP** (`amazon-cognito-identity-js`); optional **Google** via Cognito **hosted UI** and **PKCE** (public app client, no client secret).
+- **Tokens**: `src/lib/auth-storage.ts` — persist access / ID / refresh in **localStorage**; PKCE verifier in **sessionStorage** until the OAuth code is exchanged. Dispatches **`auth-storage-changed`** on `window` after writes so the same tab can refresh UI (the native `storage` event only fires across tabs).
+- **Cognito API**: `src/lib/cognito.ts` — `signIn`, `initiateGoogleSignIn`, `handleOAuthCallback`; `signUp` remains available for programmatic registration but is **not** exposed in the auth UI.
+- **UI**: `src/components/auth-form.tsx` — sign-in + Google. `src/components/nav-links.tsx` — account cluster (sign-in link or email + dropdown, **Sign out** → `signOut()`). Real destination links use **`link-real`** where needed so global `a::after` “coming soon” does not apply.
+- **Gating**: `src/components/require-signed-in.tsx` — client wrapper; if `getTokens()` is null, calls `notFound()`. Children must be client components so protected content is not baked into static HTML. Used by **`/settings/`** and **`/quotes/add/`** client pages.
+- **Nav email label**: `getStoredAuthEmail()` reads **`email` from the ID token JWT payload** (display only; not a server-verified session).
+- **Sign out**: `signOut()` clears local tokens; when **`NEXT_PUBLIC_COGNITO_DOMAIN`** and **`NEXT_PUBLIC_COGNITO_CLIENT_ID`** are set, redirects to Cognito hosted **`/logout`** (allow list **`{origin}/`** as a sign-out URL).
+- **Deep dive**: `docs/user-module.md` — environment variables (`NEXT_PUBLIC_COGNITO_*`), storage keys, and end-to-end flows.
 
 **shadcn/ui scope**: Only `chat-widget.tsx` and `src/components/ui/*` used by it. Do not add shadcn elsewhere without a concrete reason.
 

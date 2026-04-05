@@ -29,7 +29,7 @@ export function Hero() {
           <span className="inline-flex h-px w-10 shrink-0 items-center" aria-hidden>
             <span className="motion-safe:animate-hero-line motion-reduce:scale-x-100 block h-px w-full origin-left bg-gradient-to-r from-fg/30 to-transparent dark:from-fg/25" />
           </span>
-          <p className="max-w-[min(100%,36ch)] font-body text-[0.6875rem] font-medium uppercase leading-snug tracking-[0.2em] text-subtle">
+          <p className="min-w-0 max-w-full text-pretty font-body text-[0.6875rem] font-medium uppercase leading-snug tracking-[0.18em] text-subtle sm:max-w-[min(100%,36ch)] sm:tracking-[0.2em]">
             Permission to iterate — then ship the weird version.
           </p>
         </div>
