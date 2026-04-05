@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  Menu,
+  PlusCircle,
+  Settings,
+  UserRound,
+} from "lucide-react";
 import { useEffect, useLayoutEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +17,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -37,13 +45,14 @@ const mobileLinkClass = cn(
 );
 
 const primaryLinks = [
-  { href: "/about/", label: "About me" },
-  { href: "/words/", label: "Thoughts" },
+  // { href: "/about/", label: "About me" },
+  // { href: "/words/", label: "Thoughts" },
+  // { href: "/kindness/", label: "Kindness" },
 ] as const;
 
 const accountLinks = [
-  { href: "/settings/", label: "Settings" },
-  { href: "/quotes/add/", label: "Add quotes" },
+  { href: "/settings/", label: "Settings", Icon: Settings },
+  { href: "/quotes/add/", label: "Add quotes", Icon: PlusCircle },
 ] as const;
 
 function pathIs(pathname: string, path: string) {
@@ -77,6 +86,12 @@ export function NavLinks() {
 
   const authIsCurrent = pathIs(pathname, "/auth");
 
+  const signInClass = cn(
+    "link-real",
+    linkClass,
+    authIsCurrent && "font-medium text-fg",
+  );
+
   return (
     <div className="flex w-full min-w-0 flex-nowrap items-center justify-between gap-x-3 sm:gap-x-4">
       <div className="flex min-w-0 flex-1 items-center gap-x-[clamp(1rem,3vw,2.25rem)] md:gap-x-[clamp(1.25rem,3vw,2.5rem)]">
@@ -108,44 +123,80 @@ export function NavLinks() {
       </div>
 
       <div className="flex shrink-0 items-center gap-2 md:gap-x-[clamp(0.5rem,2vw,1rem)]">
-        <div className="hidden items-center gap-x-2 md:flex">
+        <div
+          className="hidden items-center gap-2 border-l border-border/70 pl-3 dark:border-border/50 md:flex"
+          role="group"
+          aria-label="Account and site appearance"
+        >
           {authEmail ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   type="button"
                   variant="ghost"
-                  className="h-9 max-w-[min(16rem,30vw)] cursor-pointer gap-1 px-2 font-normal text-[0.8125rem] leading-none tracking-[-0.01em] text-subtle hover:text-fg"
-                  aria-label={`Account menu for ${authEmail}`}
+                  className="h-9 max-w-[min(15rem,32vw)] cursor-pointer gap-2 rounded-full border border-border/80 bg-muted/45 px-3 font-normal text-[0.8125rem] leading-none tracking-[-0.01em] text-fg transition-colors duration-200 hover:bg-muted/65 dark:bg-muted/35 dark:hover:bg-muted/50"
+                  aria-label={`Open account menu for ${authEmail}`}
+                  aria-haspopup="menu"
                 >
-                  <span className="truncate">
-                    Hello, {authEmail}
+                  <UserRound
+                    className="size-3.5 shrink-0 text-primary opacity-90"
+                    strokeWidth={1.75}
+                    aria-hidden
+                  />
+                  <span className="min-w-0 flex-1 truncate text-left font-medium">
+                    {authEmail}
                   </span>
                   <ChevronDown
-                    className="size-4 shrink-0 opacity-60"
+                    className="size-4 shrink-0 opacity-55"
                     strokeWidth={1.75}
                     aria-hidden
                   />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[10.5rem]">
-                {accountLinks.map(({ href, label }) => (
+              <DropdownMenuContent
+                align="end"
+                sideOffset={8}
+                className="min-w-[12.5rem] overflow-hidden rounded-xl border-border/80 bg-popover p-1.5 shadow-lg dark:border-border/55"
+              >
+                <div className="mb-1 border-b border-border/70 px-2 pb-2 pt-0.5 dark:border-border/50">
+                  <p className="font-heading text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-subtle">
+                    Account
+                  </p>
+                  <p
+                    className="mt-1 truncate font-body text-[0.8125rem] font-medium text-fg"
+                    title={authEmail}
+                  >
+                    {authEmail}
+                  </p>
+                </div>
+                {accountLinks.map(({ href, label, Icon }) => (
                   <DropdownMenuItem key={href} asChild>
                     <Link
                       href={href}
-                      className="cursor-pointer no-underline focus:no-underline"
+                      className="link-real flex cursor-pointer items-center gap-2 rounded-md no-underline focus:no-underline"
                     >
+                      <Icon
+                        className="size-4 shrink-0 opacity-70"
+                        strokeWidth={1.75}
+                        aria-hidden
+                      />
                       {label}
                     </Link>
                   </DropdownMenuItem>
                 ))}
+                <DropdownMenuSeparator className="my-1 bg-border/80 dark:bg-border/60" />
                 <DropdownMenuItem
-                  className="cursor-pointer text-fg focus:text-fg"
+                  className="cursor-pointer gap-2 rounded-md text-destructive focus:bg-destructive/10 focus:text-destructive"
                   onSelect={(e) => {
                     e.preventDefault();
                     signOut();
                   }}
                 >
+                  <LogOut
+                    className="size-4 shrink-0 opacity-80"
+                    strokeWidth={1.75}
+                    aria-hidden
+                  />
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -153,7 +204,7 @@ export function NavLinks() {
           ) : (
             <Link
               href="/auth/"
-              className={linkClass}
+              className={signInClass}
               aria-current={authIsCurrent ? "page" : undefined}
             >
               Sign in
@@ -192,65 +243,106 @@ export function NavLinks() {
                 className="flex flex-col gap-0 pt-4"
                 aria-label="Mobile navigation"
               >
-                {primaryLinks.map(({ href, label }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={mobileLinkClass}
-                    aria-current={pathIs(pathname, href) ? "page" : undefined}
-                    onClick={() => setMobileOpen(false)}
+                <div aria-labelledby="mobile-nav-site-heading">
+                  <p
+                    id="mobile-nav-site-heading"
+                    className="mb-1 font-heading text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-subtle"
                   >
-                    {label}
-                  </Link>
-                ))}
-                {authEmail ? (
-                  <>
-                    <p
-                      className="border-b border-border py-2 text-[0.75rem] leading-snug tracking-[-0.01em] text-subtle"
-                      title={authEmail}
+                    Site
+                  </p>
+                  {primaryLinks.map(({ href, label }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={mobileLinkClass}
+                      aria-current={pathIs(pathname, href) ? "page" : undefined}
+                      onClick={() => setMobileOpen(false)}
                     >
-                      Hello,{" "}
-                      <span className="break-all font-medium text-fg/80">
-                        {authEmail}
-                      </span>
-                    </p>
-                    {accountLinks.map(({ href, label }) => (
-                      <Link
-                        key={href}
-                        href={href}
-                        className={mobileLinkClass}
-                        aria-current={
-                          pathIs(pathname, href) ? "page" : undefined
-                        }
-                        onClick={() => setMobileOpen(false)}
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+                <div
+                  className="mt-6 border-t border-border/80 pt-4 dark:border-border/60"
+                  role="region"
+                  aria-labelledby="mobile-nav-account-heading"
+                >
+                  <p
+                    id="mobile-nav-account-heading"
+                    className="mb-2 font-heading text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-subtle"
+                  >
+                    Account
+                  </p>
+                  {authEmail ? (
+                    <>
+                      <p
+                        className="mb-3 flex items-center gap-2 rounded-lg border border-border/60 bg-muted/35 px-2.5 py-2 text-[0.75rem] leading-snug text-subtle dark:bg-muted/25"
+                        title={authEmail}
                       >
-                        {label}
-                      </Link>
-                    ))}
-                    <button
-                      type="button"
+                        <UserRound
+                          className="size-4 shrink-0 text-primary opacity-90"
+                          strokeWidth={1.75}
+                          aria-hidden
+                        />
+                        <span className="min-w-0 break-all font-medium text-fg">
+                          {authEmail}
+                        </span>
+                      </p>
+                      {accountLinks.map(({ href, label, Icon }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          className={cn(
+                            mobileLinkClass,
+                            "flex items-center gap-2",
+                          )}
+                          aria-current={
+                            pathIs(pathname, href) ? "page" : undefined
+                          }
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          <Icon
+                            className="size-4 shrink-0 opacity-65"
+                            strokeWidth={1.75}
+                            aria-hidden
+                          />
+                          {label}
+                        </Link>
+                      ))}
+                      <button
+                        type="button"
+                        className={cn(
+                          mobileLinkClass,
+                          "mt-1 flex w-full items-center gap-2 border-t border-border/80 pt-3 text-left text-destructive dark:border-border/60",
+                        )}
+                        onClick={() => {
+                          setMobileOpen(false);
+                          signOut();
+                        }}
+                      >
+                        <LogOut
+                          className="size-4 shrink-0 opacity-80"
+                          strokeWidth={1.75}
+                          aria-hidden
+                        />
+                        Sign out
+                      </button>
+                    </>
+                  ) : (
+                    <Link
+                      href="/auth/"
                       className={cn(
+                        "link-real",
                         mobileLinkClass,
-                        "w-full border-t border-border text-left",
+                        authIsCurrent && "font-medium text-fg",
                       )}
-                      onClick={() => {
-                        setMobileOpen(false);
-                        signOut();
-                      }}
+                      aria-current={authIsCurrent ? "page" : undefined}
+                      onClick={() => setMobileOpen(false)}
                     >
-                      Sign out
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    href="/auth/"
-                    className={mobileLinkClass}
-                    aria-current={authIsCurrent ? "page" : undefined}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    Sign in
-                  </Link>
-                )}
+                      Sign in
+                    </Link>
+                  )}
+                </div>
               </nav>
             </SheetContent>
           </Sheet>

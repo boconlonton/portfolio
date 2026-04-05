@@ -6,9 +6,8 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { initiateGoogleSignIn, signIn, signUp } from "@/lib/cognito";
+import { initiateGoogleSignIn, signIn } from "@/lib/cognito";
 import { setTokens } from "@/lib/auth-storage";
-import { cn } from "@/lib/utils";
 
 const linkRealClass =
   "link-real relative cursor-pointer rounded-sm font-medium text-fg no-underline transition-opacity duration-200 hover:opacity-80 hover:no-underline focus-visible:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]";
@@ -51,12 +50,9 @@ function cognitoMessage(err: unknown): string {
 
 export function AuthForm() {
   const router = useRouter();
-  const [tab, setTab] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -74,26 +70,12 @@ export function AuthForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
-
-    if (tab === "register" && password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
 
     setLoading(true);
     try {
-      if (tab === "login") {
-        const tokens = await signIn(email, password);
-        setTokens(tokens);
-        router.push("/");
-      } else {
-        await signUp(email, password);
-        setSuccess("Check your email to verify your address.");
-        setTab("login");
-        setPassword("");
-        setConfirmPassword("");
-      }
+      const tokens = await signIn(email, password);
+      setTokens(tokens);
+      router.push("/");
     } catch (err: unknown) {
       setError(cognitoMessage(err));
     } finally {
@@ -111,49 +93,6 @@ export function AuthForm() {
         Account
       </h1>
 
-      <div
-        role="tablist"
-        aria-label="Authentication mode"
-        className="mb-8 flex border-b border-[var(--ds-control-track-border)]"
-      >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "login"}
-          className={cn(
-            "mr-6 pb-2 text-sm font-medium transition-colors duration-200",
-            tab === "login"
-              ? "border-b-2 border-[var(--ds-accent)] text-fg"
-              : "border-b-2 border-transparent text-[var(--text-muted)] hover:text-fg",
-          )}
-          onClick={() => {
-            setTab("login");
-            setError(null);
-            setSuccess(null);
-          }}
-        >
-          Sign in
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "register"}
-          className={cn(
-            "pb-2 text-sm font-medium transition-colors duration-200",
-            tab === "register"
-              ? "border-b-2 border-[var(--ds-accent)] text-fg"
-              : "border-b-2 border-transparent text-[var(--text-muted)] hover:text-fg",
-          )}
-          onClick={() => {
-            setTab("register");
-            setError(null);
-            setSuccess(null);
-          }}
-        >
-          Create account
-        </button>
-      </div>
-
       {error && (
         <p
           role="alert"
@@ -163,16 +102,6 @@ export function AuthForm() {
           {error}
         </p>
       )}
-      {success && (
-        <p
-          role="status"
-          aria-live="polite"
-          className="mb-4 text-sm text-[var(--ds-accent)]"
-        >
-          {success}
-        </p>
-      )}
-
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="auth-email" className="text-sm font-medium text-fg">
@@ -196,43 +125,19 @@ export function AuthForm() {
           <Input
             id="auth-password"
             type="password"
-            autoComplete={
-              tab === "login" ? "current-password" : "new-password"
-            }
+            autoComplete="current-password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading || googleLoading}
           />
         </div>
-        {tab === "register" && (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="auth-confirm" className="text-sm font-medium text-fg">
-              Confirm password
-            </label>
-            <Input
-              id="auth-confirm"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={loading || googleLoading}
-            />
-          </div>
-        )}
         <Button
           type="submit"
           className="w-full"
           disabled={loading || googleLoading}
         >
-          {loading
-            ? tab === "login"
-              ? "Signing in…"
-              : "Creating account…"
-            : tab === "login"
-              ? "Sign in"
-              : "Create account"}
+          {loading ? "Signing in…" : "Sign in"}
         </Button>
       </form>
 
