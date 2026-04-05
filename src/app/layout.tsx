@@ -92,7 +92,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <div className="flex min-h-dvh w-full max-w-portfolio flex-col px-[clamp(1.25rem,5vw,1.75rem)]">
+          <div className="flex min-h-dvh w-full max-w-[min(100%,34rem)] flex-col px-[clamp(1rem,5vw,1.75rem)] md:max-w-[min(100%,42rem)] lg:max-w-[min(100%,48rem)]">
             <a href="#main-content" className="skip-to-main">
               Skip to main content
             </a>
