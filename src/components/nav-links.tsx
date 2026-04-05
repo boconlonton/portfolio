@@ -21,7 +21,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { getStoredAuthEmail } from "@/lib/auth-storage";
+import {
+  AUTH_STORAGE_CHANGED_EVENT,
+  getStoredAuthEmail,
+  signOut,
+} from "@/lib/auth-storage";
 import { cn } from "@/lib/utils";
 
 const linkClass =
@@ -60,7 +64,11 @@ export function NavLinks() {
     }
     sync();
     window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
+    window.addEventListener(AUTH_STORAGE_CHANGED_EVENT, sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener(AUTH_STORAGE_CHANGED_EVENT, sync);
+    };
   }, [pathname]);
 
   useEffect(() => {
@@ -131,6 +139,15 @@ export function NavLinks() {
                     </Link>
                   </DropdownMenuItem>
                 ))}
+                <DropdownMenuItem
+                  className="cursor-pointer text-fg focus:text-fg"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    signOut();
+                  }}
+                >
+                  Sign out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -210,6 +227,19 @@ export function NavLinks() {
                         {label}
                       </Link>
                     ))}
+                    <button
+                      type="button"
+                      className={cn(
+                        mobileLinkClass,
+                        "w-full border-t border-border text-left",
+                      )}
+                      onClick={() => {
+                        setMobileOpen(false);
+                        signOut();
+                      }}
+                    >
+                      Sign out
+                    </button>
                   </>
                 ) : (
                   <Link

@@ -2,15 +2,16 @@
 
 ## Section 1 — Overview
 
-The user/auth module adds client-only sign-in and registration against **AWS Cognito**: email/password (SRP via `amazon-cognito-identity-js`) and **Google** via the Cognito hosted UI with **PKCE** (no client secret). Tokens live in **localStorage**; the PKCE verifier lives in **sessionStorage** until the OAuth code is exchanged. The app uses **`output: "export"`** — there are no App Router API routes; all logic runs in the browser. Owning files: `src/lib/auth-storage.ts`, `src/lib/cognito.ts`, `src/components/auth-form.tsx`, `src/app/auth/page.tsx`, `src/app/auth/callback/page.tsx`, and `src/app/auth/callback/auth-callback-client.tsx`.
+The user/auth module adds client-only sign-in and registration against **AWS Cognito**: email/password (SRP via `amazon-cognito-identity-js`) and **Google** via the Cognito hosted UI with **PKCE** (no client secret). Tokens live in **localStorage**; the PKCE verifier lives in **sessionStorage** until the OAuth code is exchanged. The app uses **`output: "export"`** — there are no App Router API routes; all logic runs in the browser. Owning files: `src/lib/auth-storage.ts`, `src/lib/cognito.ts`, `src/components/auth-form.tsx`, `src/components/nav-links.tsx` (account menu / sign out), `src/app/auth/page.tsx`, `src/app/auth/callback/page.tsx`, and `src/app/auth/callback/auth-callback-client.tsx`.
 
 ## Section 2 — File Map
 
 | File | Role |
 |------|------|
-| `src/lib/auth-storage.ts` | Token persistence (localStorage + sessionStorage PKCE) |
+| `src/lib/auth-storage.ts` | Token persistence, `signOut`, same-tab `auth-storage-changed` |
 | `src/lib/cognito.ts` | Cognito SDK calls + PKCE OAuth helpers |
 | `src/components/auth-form.tsx` | UI — login / register tabs + Google button |
+| `src/components/nav-links.tsx` | Account dropdown + mobile nav; Sign out → `signOut()` |
 | `src/app/auth/page.tsx` | Route — metadata wrapper |
 | `src/app/auth/callback/page.tsx` | Route — Suspense + metadata wrapper |
 | `src/app/auth/callback/auth-callback-client.tsx` | Client — OAuth callback (`useSearchParams`) |
@@ -56,12 +57,24 @@ All variables are `NEXT_PUBLIC_*` because the module runs entirely in the browse
 ```
 setTokens({ accessToken, idToken, refreshToken }): void
   Writes all three tokens to localStorage. No-op if window is undefined.
+  Dispatches `auth-storage-changed` on `window`.
 
 getTokens(): { accessToken, idToken, refreshToken } | null
   Returns all three tokens or null if any key is missing.
 
 clearTokens(): void
   Removes all three token keys from localStorage.
+  Dispatches `auth-storage-changed` on `window` so same-tab UI (e.g. nav) can resync.
+
+signOut(): void
+  Clears tokens via clearTokens(). If `NEXT_PUBLIC_COGNITO_DOMAIN` and
+  `NEXT_PUBLIC_COGNITO_CLIENT_ID` are set, navigates to Cognito hosted UI
+  `GET /logout?client_id=…&logout_uri=…` with `logout_uri` = `{window.location.origin}/`
+  (must be listed under Allowed sign-out URLs). If domain/client are unset, only
+  local tokens are cleared and the current page stays loaded.
+
+AUTH_STORAGE_CHANGED_EVENT
+  Event name (`"auth-storage-changed"`) fired after setTokens / clearTokens.
 
 setPkceVerifier(verifier: string): void
   Writes the PKCE code verifier to sessionStorage.
@@ -155,6 +168,16 @@ Cognito redirects to {REDIRECT_URI}?code={authCode}
       → clearPkceVerifier()
     → setTokens(tokens)              [auth-storage.ts → localStorage]
     → router.replace("/")
+```
+
+### Sign out
+
+```
+User chooses Sign out (nav dropdown / mobile)
+  → signOut()                         [auth-storage.ts]
+    → clearTokens()                   localStorage cleared + auth-storage-changed
+    → (optional) window.location → Cognito /logout  when domain + client id env are set
+      ← user lands on `{origin}/` per Allowed sign-out URLs
 ```
 
 ## Section 7 — Error Handling

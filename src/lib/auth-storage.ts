@@ -2,7 +2,15 @@ export const AUTH_ACCESS_TOKEN_KEY = "auth_access_token";
 export const AUTH_ID_TOKEN_KEY = "auth_id_token";
 export const AUTH_REFRESH_TOKEN_KEY = "auth_refresh_token";
 
+/** Same-tab listeners (e.g. nav) — `storage` only fires across tabs. */
+export const AUTH_STORAGE_CHANGED_EVENT = "auth-storage-changed";
+
 const PKCE_VERIFIER_KEY = "pkce_code_verifier";
+
+function notifyAuthStorageChanged(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(AUTH_STORAGE_CHANGED_EVENT));
+}
 
 export function setTokens(tokens: {
   accessToken: string;
@@ -13,6 +21,7 @@ export function setTokens(tokens: {
   localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, tokens.accessToken);
   localStorage.setItem(AUTH_ID_TOKEN_KEY, tokens.idToken);
   localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, tokens.refreshToken);
+  notifyAuthStorageChanged();
 }
 
 export function getTokens(): {
@@ -33,6 +42,30 @@ export function clearTokens(): void {
   localStorage.removeItem(AUTH_ACCESS_TOKEN_KEY);
   localStorage.removeItem(AUTH_ID_TOKEN_KEY);
   localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
+  notifyAuthStorageChanged();
+}
+
+/**
+ * Clears persisted tokens. If hosted UI is configured (`NEXT_PUBLIC_COGNITO_DOMAIN`
+ * + `NEXT_PUBLIC_COGNITO_CLIENT_ID`), redirects to Cognito `/logout` so federated
+ * sessions end; register `logout_uri` (`{origin}/`) under Allowed sign-out URLs.
+ */
+export function signOut(): void {
+  if (typeof window === "undefined") return;
+
+  const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
+  const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+
+  clearTokens();
+
+  if (domain && clientId) {
+    const logoutUri = `${window.location.origin}/`;
+    const params = new URLSearchParams({
+      client_id: clientId,
+      logout_uri: logoutUri,
+    });
+    window.location.assign(`https://${domain}/logout?${params.toString()}`);
+  }
 }
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
