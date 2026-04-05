@@ -33,6 +33,28 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Set build environment variables
+        run: |
+          append_env() {
+            local name=$1
+            local value=$2
+            [ -z "$value" ] && return 0
+            {
+              printf '%s<<BUILD_ENV_EOF\n' "$name"
+              printf '%s\n' "$value"
+              printf 'BUILD_ENV_EOF\n'
+            } >> "$GITHUB_ENV"
+          }
+          append_env NEXT_PUBLIC_BACKEND_URL "${NEXT_PUBLIC_BACKEND_URL}"
+          append_env NEXT_PUBLIC_COGNITO_USER_POOL_ID "${NEXT_PUBLIC_COGNITO_USER_POOL_ID}"
+          append_env NEXT_PUBLIC_COGNITO_CLIENT_ID "${NEXT_PUBLIC_COGNITO_CLIENT_ID}"
+          append_env NEXT_PUBLIC_COGNITO_REGION "${NEXT_PUBLIC_COGNITO_REGION}"
+        env:
+          NEXT_PUBLIC_BACKEND_URL: ${{ vars.NEXT_PUBLIC_BACKEND_URL }}
+          NEXT_PUBLIC_COGNITO_USER_POOL_ID: ${{ vars.NEXT_PUBLIC_COGNITO_USER_POOL_ID }}
+          NEXT_PUBLIC_COGNITO_CLIENT_ID: ${{ vars.NEXT_PUBLIC_COGNITO_CLIENT_ID }}
+          NEXT_PUBLIC_COGNITO_REGION: ${{ vars.NEXT_PUBLIC_COGNITO_REGION }}
+
       - name: Build
         run: pnpm build
 
