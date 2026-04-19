@@ -45,9 +45,7 @@ const mobileLinkClass = cn(
 );
 
 const primaryLinks = [
-  // { href: "/about/", label: "About me" },
-  // { href: "/words/", label: "Thoughts" },
-  // { href: "/kindness/", label: "Kindness" },
+  { href: "/play/", label: "Play" },
 ] as const;
 
 const accountLinks = [

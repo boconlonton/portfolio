@@ -62,6 +62,7 @@ Public URLs use **trailing slashes** on nested routes (e.g. `/about/`) to match 
 | `/auth/`             | Sign-in (email/password + optional Google) |
 | `/auth/callback/`    | OAuth redirect handler (PKCE code exchange) |
 | `/settings/`         | Signed-in-only stub (`RequireSignedIn`, `noindex`) |
+| `/play/`             | Party game — Would You Rather, Never Have I Ever, Most Likely To (`noindex`) |
 | `/quotes/add/`       | Signed-in-only stub (`RequireSignedIn`, `noindex`) |
 
 Canonical site URL and copy live in `src/lib/site.ts` (`SITE_URL`, `SITE_NAME`, `SITE_DESCRIPTION`).
@@ -75,6 +76,7 @@ src/app/
   layout.tsx, page.tsx, globals.css, not-found.tsx
   about/, words/, kindness/     — stub pages
   auth/, auth/callback/         — Cognito sign-in + OAuth callback
+  play/                         — party game (noindex; `PlayClient` + `play-client.tsx`)
   settings/, quotes/add/       — signed-in stubs (client gates)
   manifest.ts, sitemap.ts, robots.ts, opengraph-image.tsx
 src/components/
@@ -83,12 +85,14 @@ src/components/
   require-signed-in.tsx         — client gate (notFound if no tokens)
   hero.tsx, intro.tsx, site-footer.tsx
   chat-widget.tsx               — POST `${NEXT_PUBLIC_BACKEND_URL}/api/agent/chat` when env set; else Send disabled
+  game/                         — setup-view, game-view, question-card, penalty-reel, history-view
   theme-provider.tsx, theme-toggle.tsx
   json-ld.tsx                   — WebSite + Person JSON-LD
   ui/                           — shadcn primitives
 src/lib/
   site.ts, utils.ts
   cognito.ts, auth-storage.ts   — Cognito + token / PKCE storage
+  game-content.json, game-data.ts, game-engine.ts, game-storage.ts  — party game content + logic
 docs/user-module.md             — auth module reference (env, storage, flows)
 public/                         — favicon.svg, etc.
 out/                            — static export (gitignored); produced by pnpm build

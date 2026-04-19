@@ -24,6 +24,7 @@ pnpm lint           # ESLint
 
 - **`/`** — `page.tsx`: Hero, Intro, `SiteFooter`, `ChatWidget`
 - **`/about`**, **`/words`**, **`/kindness`** — real routes with minimal “coming soon” copy and metadata; nav labels: About me, Thoughts, Kindness
+- **`/play/`** — party game client page (`noindex`); see **Game module** below
 - **`/auth/`**, **`/auth/callback/`** — Cognito sign-in page and OAuth redirect handler (client)
 - **`/settings/`**, **`/quotes/add/`** — signed-in-only stubs (`RequireSignedIn`); `robots: noindex`
 - **`not-found.tsx`** — custom 404
@@ -63,6 +64,22 @@ pnpm lint           # ESLint
 - **Nav email label**: `getStoredAuthEmail()` reads **`email` from the ID token JWT payload** (display only; not a server-verified session).
 - **Sign out**: `signOut()` clears local tokens; when **`NEXT_PUBLIC_COGNITO_DOMAIN`** and **`NEXT_PUBLIC_COGNITO_CLIENT_ID`** are set, redirects to Cognito hosted **`/logout`** (allow list **`{origin}/`** as a sign-out URL).
 - **Deep dive**: `docs/user-module.md` — environment variables (`NEXT_PUBLIC_COGNITO_*`), storage keys, and end-to-end flows.
+
+**Game module** (`/play/`): A two-player party game with three modes — **Would You Rather** (`wyr`), **Never Have I Ever** (`nhi`), **Most Likely To** (`mlt`) — plus a **Shuffle** meta-mode that round-robins across all three. Content and mechanics live in:
+
+- `src/lib/game-content.json` — questions (Vietnamese) and penalties, each with `id`, `gameType`, `level` (1–5), and optional `specialRule` / `specialPenalty`
+- `src/lib/game-data.ts` — TS types (`Question`, `Penalty`, `GameType`, etc.) and `GAME_DEFINITIONS` (labels + rules)
+- `src/lib/game-engine.ts` — pure functions: `filterQuestions`, `pickQuestion`, `pickPenalty`, `pickShuffleQuestion`, `shuffle`; label maps (`GAME_TYPE_LABELS`, `LEVEL_LABELS`, `INTENSITY_LABELS`)
+- `src/lib/game-storage.ts` — `localStorage` history persistence (`loadHistory`, `saveRound`, `clearHistory`)
+- `src/components/game/setup-view.tsx` — level slider, game-type picker, penalty intensity selector
+- `src/components/game/game-view.tsx` — in-game loop; renders `QuestionCard` and `PenaltyReel`, tracks seen set
+- `src/components/game/question-card.tsx` — animated card displaying the current question
+- `src/components/game/penalty-reel.tsx` — animated penalty reveal
+- `src/components/game/history-view.tsx` — past-round list with clear action
+- `src/app/play/play-client.tsx` — top-level client shell; tab bar (Setup / Play / History) + state orchestration
+- `src/app/play/page.tsx` — server wrapper with metadata (`robots: noindex`)
+
+CSS custom properties for the game surface (`--play-bg`, `--play-border`, `--play-accent`, etc.) are defined in `globals.css`.
 
 **shadcn/ui scope**: Only `chat-widget.tsx` and `src/components/ui/*` used by it. Do not add shadcn elsewhere without a concrete reason.
 

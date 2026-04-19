@@ -10,6 +10,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        "play-bg": "var(--play-bg)",
+        "play-card": "var(--play-card)",
+        "play-card-back": "var(--play-card-back)",
+        "play-accent": "var(--play-accent)",
+        "play-accent-fg": "var(--play-accent-fg)",
+        "play-penalty": "var(--play-penalty)",
+        "play-penalty-fg": "var(--play-penalty-fg)",
+        "play-truth": "var(--play-truth)",
+        "play-dare": "var(--play-dare)",
+        "play-wyr": "var(--play-wyr)",
+        "play-stoic": "var(--play-stoic)",
+        "play-border": "var(--play-border)",
         fg: "var(--fg)",
         subtle: "var(--subtle)",
         canvas: "var(--bg)",
@@ -123,6 +135,26 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        cardFlip: {
+          from: { transform: "rotateY(0deg)" },
+          to: { transform: "rotateY(180deg)" },
+        },
+        slotReel: {
+          "0%": { transform: "translateY(0%)", animationTimingFunction: "cubic-bezier(0.16,1,0.3,1)" },
+          "60%": { transform: "translateY(-320%)" },
+          "75%": { transform: "translateY(-290%)" },
+          "88%": { transform: "translateY(-310%)" },
+          "100%": { transform: "translateY(-300%)" },
+        },
+        playFadeIn: {
+          from: { opacity: "0", transform: "translateY(12px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        penaltyPop: {
+          "0%": { transform: "scale(0.88)", opacity: "0" },
+          "60%": { transform: "scale(1.04)", opacity: "1" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
       },
       animation: {
         "fade-up-nav": "fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both",
@@ -134,6 +166,10 @@ const config: Config = {
         "theme-flip": "themeFlip 0.55s cubic-bezier(0.34,1.3,0.64,1) both",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "card-flip": "cardFlip 0.45s cubic-bezier(0.16,1,0.3,1) both",
+        "slot-reel": "slotReel 0.85s cubic-bezier(0.16,1,0.3,1) both",
+        "play-fade-in": "playFadeIn 0.4s cubic-bezier(0.16,1,0.3,1) both",
+        "penalty-pop": "penaltyPop 0.35s cubic-bezier(0.34,1.3,0.64,1) both",
         "hero-glow": "heroGlow 9s ease-in-out infinite",
         "hero-line": "heroLineExpand 0.9s cubic-bezier(0.16,1,0.3,1) both",
         "hero-sparkle": "heroSparkle 4s ease-in-out infinite",

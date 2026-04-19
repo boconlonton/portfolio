@@ -44,6 +44,20 @@
     --ds-control-thumb-border: color-mix(in srgb, var(--fg) 10%, transparent);
     --ds-accent: hsl(var(--primary));
     --ds-accent-muted: color-mix(in srgb, hsl(var(--primary)) 45%, var(--fg));
+
+    /* Play game tokens — light */
+    --play-bg: #f8f8f8;
+    --play-card: #ffffff;
+    --play-card-back: #f0f0f0;
+    --play-accent: #e11d48;
+    --play-accent-fg: #ffffff;
+    --play-penalty: #2563eb;
+    --play-penalty-fg: #ffffff;
+    --play-truth: #7c3aed;
+    --play-dare: #e11d48;
+    --play-wyr: #0891b2;
+    --play-stoic: #059669;
+    --play-border: rgba(0, 0, 0, 0.08);
   }
 
   .dark {
@@ -81,6 +95,20 @@
     --ds-control-thumb-border: color-mix(in srgb, var(--fg) 12%, transparent);
     --ds-accent: hsl(var(--primary));
     --ds-accent-muted: color-mix(in srgb, hsl(var(--primary)) 40%, var(--bg));
+
+    /* Play game tokens — dark (OLED) */
+    --play-bg: #000000;
+    --play-card: #111111;
+    --play-card-back: #0d0d0d;
+    --play-accent: #f43f5e;
+    --play-accent-fg: #ffffff;
+    --play-penalty: #3b82f6;
+    --play-penalty-fg: #ffffff;
+    --play-truth: #a78bfa;
+    --play-dare: #f43f5e;
+    --play-wyr: #22d3ee;
+    --play-stoic: #34d399;
+    --play-border: rgba(255, 255, 255, 0.08);
   }
 
   * {
